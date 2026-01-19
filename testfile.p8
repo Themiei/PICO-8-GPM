@@ -3,18 +3,31 @@ version 42
 __lua__
 function _init()
 
-player = { x, y, w, h, state, mass, vel, accel} 
+player = { x = 64
+, y = 64
+, w = 8
+,h = 8
+,state
+,mass = 10
+, velx = 0
+,vely = 0
+,accel = 0} 
 
 
 end 
 
 function _update()
-
+	
 
 end
 
-function draw()
+function _draw()
 
+	cls()
+  rectfill(player.x
+  ,player.y
+  ,player.x + player.w
+  ,player.y + player.h,7)
 end
 
 
