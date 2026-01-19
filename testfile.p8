@@ -3,9 +3,13 @@ version 42
 __lua__
 function _init()
 
+player = { x, y, w, h, state, mass, vel, accel} 
+
+
 end 
 
 function _update()
+
 
 end
 
