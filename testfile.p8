@@ -1,3 +1,9 @@
+#include "Entity.lua"
+#include "Forces.lua"
+#include "Movement.lua"
+#include "Objects.lua"
+#include "Sprites.lua"
+
 pico-8 cartridge // http://www.pico-8.com
 version 42
 __lua__
