@@ -10,6 +10,7 @@ end
 
 function runSprites()
 
+    local p = player
     tx = flr(x / 8)
     ty = flr(y / 8)
     
@@ -17,8 +18,9 @@ function runSprites()
 
     
 
-    if(collidemap(x,y)) then
-
+    if(collide_map(p.x, p.y, p.w, p.h)) then
+     
+    end
 end
 
 function collide_map(x, y, w, h)

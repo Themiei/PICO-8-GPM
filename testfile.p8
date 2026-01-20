@@ -1,12 +1,13 @@
+pico-8 cartridge // http://www.pico-8.com
+version 42
+__lua__
+
 #include "Entity.lua"
 #include "Forces.lua"
 #include "Movement.lua"
 #include "Objects.lua"
 #include "Sprites.lua"
 
-pico-8 cartridge // http://www.pico-8.com
-version 42
-__lua__
 function _init()
 
 player = { x = 64
@@ -17,7 +18,9 @@ player = { x = 64
 ,mass = 10
 , velx = 0
 ,vely = 0
-,accel = 0} 
+,accel = 0
+,fx = 0
+,fy = 0} 
 
 
 end 
