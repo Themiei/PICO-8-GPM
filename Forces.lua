@@ -11,49 +11,128 @@ function integrate(p)
 end
 
 
-function move_y(p)
-    local ny = p.y + p.vely
-
-    if collide_map(p.x, ny, p.w, p.h) then
-        if p.vely > 0 then
-            p.y = flr((ny + p.h) / 8) * 8 - p.h
-            p.state = "grounded"
-        elseif p.vely < 0 then
-            p.y = flr(ny / 8 + 1) * 8
-        end
-        p.vely = 0
+function move_x(p)
+    local dx = p.velx
+    if not collide_map(p.x + dx, p.y, p.w, p.h) then
+        p.x += dx
     else
-        p.y = ny
-        p.state = "airborne"
+        p.velx = 0
     end
 end
 
-function move_x(p)
-    local nx = p.x + p.velx
-
-    if collide_map(nx, p.y, p.w, p.h) then
-        if p.velx > 0 then
-            p.x = flr((nx + p.w) / 8) * 8 - p.w
-        elseif p.velx < 0 then
-            p.x = flr(nx / 8 + 1) * 8
-        end
-        p.velx = 0
+function move_y(p)
+    local dy = p.vely
+    if not collide_map(p.x, p.y + dy, p.w, p.h) then
+        p.y += dy
+        p.state = "airborne"
     else
-        p.x = nx
+        if dy > 0 then p.state = "grounded" end
+        p.vely = 0
     end
 end
 
 function updatePhysics()
-    local p = player
+    local entities = {player, enemy, object}
 
-    -- forces
-    p.fy += 0.6 -- gravity
+    for e in all(entities) do
+        -- 1️⃣ Apply gravity
+        e.fy += 0.6
 
-    -- integrate velocity
-    integrate(p)
+        -- 2️⃣ Apply friction (only if grounded)
+        applyFriction(e, 0.2)
 
-    -- collision resolution
-    move_x(p)
-    move_y(p)
+        -- 3️⃣ Integrate velocity
+        integrate(e)
+        e.vely = min(e.vely, 4) -- terminal velocity
+
+        -- 4️⃣ Resolve collisions per axis, pixel-by-pixel
+        move_x(e)
+        move_y(e)
+    end
 end
+
+function applyForce(p, fx, fy)
+    p.fx += fx
+    p.fy += fy
+end 
+
+function applyImpulse(p, ix, iy)
+    p.velx += ix / p.mass
+    p.vely += iy / p.mass
+end
+
+function pullTowards(p, tx, ty, strength)
+    local dx = tx - (p.x + p.w / 2)
+    local dy = ty - (p.y + p.h / 2)
+    local dist = sqrt(dx * dx + dy * dy)
+    if dist > 0 then
+        local fx = (dx / dist) * strength
+        local fy = (dy / dist) * strength
+        applyForce(p, fx, fy)
+    end
+end
+
+function pushAway(p, tx, ty, strength)
+    local dx = (p.x + p.w / 2) - tx
+    local dy = (p.y + p.h / 2) - ty
+    local dist = sqrt(dx * dx + dy * dy)
+    if dist > 0 then
+        local fx = (dx / dist) * strength
+        local fy = (dy / dist) * strength
+        applyForce(p, fx, fy)
+    end
+end
+
+function distance(p, tx, ty)
+    local dx = tx - (p.x + p.w / 2)
+    local dy = ty - (p.y + p.h / 2)
+    return sqrt(dx * dx + dy * dy)
+end
+
+function collisionAABB2AABB(p1, p2)
+    return not (p1.x > p2.x + p2.w or
+                p1.x + p1.w < p2.x or
+                p1.y > p2.y + p2.h or
+                p1.y + p1.h < p2.y)
+end
+
+    function resolveCollision(p1, p2)
+        local overlapX = min(p1.x + p1.w - p2.x, p2.x + p2.w - p1.x)
+        local overlapY = min(p1.y + p1.h - p2.y, p2.y + p2.h - p1.y)
+        if overlapX < overlapY then
+            if p1.x < p2.x then
+                p1.x -= overlapX
+            else
+                p1.x += overlapX
+            end
+            p1.velx = 0
+        else
+            if p1.y < p2.y then
+                p1.y -= overlapY
+                p1.state = 'grounded'
+            else
+                p1.y += overlapY
+            end
+            p1.vely = 0
+        end
+    end
+
+function applyFriction(p, friction)
+    if p.state == 'grounded' then
+        if abs(p.velx) <= friction then
+            p.velx = 0
+        elseif p.velx > 0 then
+            p.velx -= friction
+        elseif p.velx < 0 then
+            p.velx += friction
+        end
+    end
+end
+
+function sign(x)
+    if x > 0 then return 1 end
+    if x < 0 then return -1 end
+    return 1  -- avoid 0! always move at least 1 pixel
+end
+
 --endregion
