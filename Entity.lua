@@ -7,6 +7,18 @@ Entity = {}
 Entity.__index = Entity
 Entity.nextId = 0
 
+Entity.states = { }  -- possible states for entities
+
+Entity.states.idle = function(self, dt)
+    self.vx = 0
+    self.vy = 0
+end
+
+Entity.states.move = function(self, dt)
+    -- example move state
+    self.vx = 50
+end
+
 -- entity id generator
 
 function Entity:new(x, y)
@@ -25,13 +37,25 @@ function Entity:new(x, y)
 
     e.alive = true
 
+    e.state = "idle" -- default state
+
     return e
 end
 
 function Entity:update(dt)
+
+    -- run behaviour based on state
+    local stateFunc = Entity.states[self.state]
+    if stateFunc then
+        stateFunc(self, dt)
+    end
+
     -- basic movement
     self.x = self.x + self.vx * dt
     self.y = self.y + self.vy * dt
+
+-- override in child types
+
 end
 
 function Entity:draw()
